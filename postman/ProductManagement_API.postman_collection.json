@@ -1,0 +1,1238 @@
+{
+  "info": {
+    "_postman_id": "c7a2e3f1-4b58-4d90-8e21-9f3c6a17b045",
+    "name": "ProductManagement API",
+    "description": "Complete test collection for the ProductManagement REST API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "POST Create Category (top-level)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Response success is true\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test(\"category_id is captured\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.id).to.be.a('string');",
+                  "    pm.environment.set(\"category_id\", body.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Clothing\",\n  \"parentId\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "categories"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Sub-Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Sub-category parentId matches category_id\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.parentId).to.equal(pm.environment.get(\"category_id\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"T-Shirts\",\n  \"parentId\": \"{{category_id}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "categories"]
+            }
+          }
+        },
+        {
+          "name": "GET Category Tree",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response success is true\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test(\"Data is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data).to.be.an('array');",
+                  "});",
+                  "pm.test(\"Data has at least one category\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.length).to.be.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "categories"]
+            }
+          }
+        },
+        {
+          "name": "GET Category By Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Data id matches category_id\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.id).to.equal(pm.environment.get(\"category_id\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "categories", "{{category_id}}"]
+            }
+          }
+        },
+        {
+          "name": "GET Category Not Found (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Response title is Not Found\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.title).to.equal(\"Not Found\");",
+                  "});",
+                  "pm.test(\"Response is ProblemDetails not envelope (success is undefined)\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.success).to.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/categories/00000000-0000-0000-0000-000000000000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "categories", "00000000-0000-0000-0000-000000000000"]
+            }
+          }
+        },
+        {
+          "name": "PUT Update Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Category name is updated\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.name).to.equal(\"Clothing & Apparel\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Clothing & Apparel\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "categories", "{{category_id}}"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Category — Validation Fail (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Errors.name is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.errors.name).to.be.an('array');",
+                  "});",
+                  "pm.test(\"Errors.name[0] contains required\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.errors.name[0].toLowerCase()).to.include(\"required\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "categories"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Delete Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "categories", "{{category_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "POST Create Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Response success is true\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.success).to.be.true;",
+                  "});",
+                  "pm.test(\"Product has 3 variants\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.variants.length).to.equal(3);",
+                  "});",
+                  "pm.test(\"Message is Product created successfully\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.message).to.equal(\"Product created successfully.\");",
+                  "});",
+                  "pm.test(\"product_id and variant_id are captured\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.id).to.be.a('string');",
+                  "    pm.environment.set(\"product_id\", body.data.id);",
+                  "    pm.environment.set(\"variant_id\", body.data.variants[0].id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Basic Tee\",\n  \"description\": \"A comfortable everyday t-shirt.\",\n  \"basePrice\": 29.99,\n  \"categoryId\": \"{{category_id}}\",\n  \"status\": 1,\n  \"initialVariants\": [\n    {\n      \"sku\": \"BASIC-TEE-S-WHT\",\n      \"price\": null,\n      \"stock\": 50,\n      \"attributes\": { \"size\": \"S\", \"color\": \"White\" }\n    },\n    {\n      \"sku\": \"BASIC-TEE-M-WHT\",\n      \"price\": null,\n      \"stock\": 100,\n      \"attributes\": { \"size\": \"M\", \"color\": \"White\" }\n    },\n    {\n      \"sku\": \"BASIC-TEE-L-BLK\",\n      \"price\": 27.99,\n      \"stock\": 75,\n      \"attributes\": { \"size\": \"L\", \"color\": \"Black\" }\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Product — Duplicate SKU (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Response title is Conflict\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.title).to.equal(\"Conflict\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Basic Tee\",\n  \"description\": \"A comfortable everyday t-shirt.\",\n  \"basePrice\": 29.99,\n  \"categoryId\": \"{{category_id}}\",\n  \"status\": 1,\n  \"initialVariants\": [\n    {\n      \"sku\": \"BASIC-TEE-S-WHT\",\n      \"price\": null,\n      \"stock\": 50,\n      \"attributes\": { \"size\": \"S\", \"color\": \"White\" }\n    },\n    {\n      \"sku\": \"BASIC-TEE-M-WHT\",\n      \"price\": null,\n      \"stock\": 100,\n      \"attributes\": { \"size\": \"M\", \"color\": \"White\" }\n    },\n    {\n      \"sku\": \"BASIC-TEE-L-BLK\",\n      \"price\": 27.99,\n      \"stock\": 75,\n      \"attributes\": { \"size\": \"L\", \"color\": \"Black\" }\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Product — Invalid BasePrice (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Errors.basePrice is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.errors.basePrice).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Product\",\n  \"basePrice\": -10,\n  \"categoryId\": \"{{category_id}}\",\n  \"status\": 1,\n  \"initialVariants\": [\n    { \"sku\": \"BAD-SKU-001\", \"stock\": 0, \"attributes\": { \"size\": \"M\" } }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Product — No Variants (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Errors.initialVariants is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.errors.initialVariants).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"No Variant Product\",\n  \"basePrice\": 19.99,\n  \"categoryId\": \"{{category_id}}\",\n  \"status\": 1,\n  \"initialVariants\": []\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Product — Category Not Found (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Errors.categoryId is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.errors.categoryId).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ghost Product\",\n  \"basePrice\": 19.99,\n  \"categoryId\": \"00000000-0000-0000-0000-000000000000\",\n  \"status\": 1,\n  \"initialVariants\": [\n    { \"sku\": \"GHOST-001\", \"stock\": 0, \"attributes\": { \"size\": \"M\" } }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products"]
+            }
+          }
+        },
+        {
+          "name": "GET Product List (default)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"TotalCount is at least 1\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.totalCount).to.be.at.least(1);",
+                  "});",
+                  "pm.test(\"Data.data is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.data).to.be.an('array');",
+                  "});",
+                  "pm.test(\"Page is 1\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.page).to.equal(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products"]
+            }
+          }
+        },
+        {
+          "name": "GET Product List — With Filters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"PageSize is 5\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.pageSize).to.equal(5);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products?page=1&pageSize=5&search=tee&sortBy=basePrice&sortOrder=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "5" },
+                { "key": "search", "value": "tee" },
+                { "key": "sortBy", "value": "basePrice" },
+                { "key": "sortOrder", "value": "asc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Product List — Price Range Filter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"All products have basePrice >= 10\", function () {",
+                  "    var body = pm.response.json();",
+                  "    body.data.data.forEach(function (product) {",
+                  "        pm.expect(product.basePrice).to.be.at.least(10);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products?minPrice=10&maxPrice=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products"],
+              "query": [
+                { "key": "minPrice", "value": "10" },
+                { "key": "maxPrice", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Product By Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Data id matches product_id\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.id).to.equal(pm.environment.get(\"product_id\"));",
+                  "});",
+                  "pm.test(\"Data.variants is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.variants).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "GET Product Not Found (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products/00000000-0000-0000-0000-000000000000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products", "00000000-0000-0000-0000-000000000000"]
+            }
+          }
+        },
+        {
+          "name": "PUT Update Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"BasePrice is updated to 34.99\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.basePrice).to.equal(34.99);",
+                  "});",
+                  "pm.test(\"Message is Product updated successfully\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.message).to.equal(\"Product updated successfully.\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Basic Tee (Updated)\",\n  \"description\": \"Updated description.\",\n  \"basePrice\": 34.99,\n  \"categoryId\": \"{{category_id}}\",\n  \"status\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Soft Delete Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products", "{{product_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Variants",
+      "item": [
+        {
+          "name": "GET Variants By Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Data is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data).to.be.an('array');",
+                  "});",
+                  "pm.test(\"At least one variant exists\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.length).to.be.at.least(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products/{{product_id}}/variants",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products", "{{product_id}}", "variants"]
+            }
+          }
+        },
+        {
+          "name": "POST Add Variant To Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Variant SKU matches\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.sku).to.equal(\"BASIC-TEE-XL-BLK\");",
+                  "});",
+                  "pm.test(\"variant_id is updated\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.id).to.be.a('string');",
+                  "    pm.environment.set(\"variant_id\", body.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"BASIC-TEE-XL-BLK\",\n  \"price\": 31.99,\n  \"stock\": 30,\n  \"attributes\": { \"size\": \"XL\", \"color\": \"Black\" }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products/{{product_id}}/variants",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products", "{{product_id}}", "variants"]
+            }
+          }
+        },
+        {
+          "name": "POST Add Variant — Invalid SKU Format (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Errors.sku[0] mentions uppercase\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.errors.sku).to.be.an('array');",
+                  "    pm.expect(body.errors.sku[0].toLowerCase()).to.include(\"uppercase\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"invalid sku!!\",\n  \"stock\": 10,\n  \"attributes\": { \"size\": \"M\" }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products/{{product_id}}/variants",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products", "{{product_id}}", "variants"]
+            }
+          }
+        },
+        {
+          "name": "POST Add Variant — Empty Attributes (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Errors.attributes is an array\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.errors.attributes).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"VALID-SKU-001\",\n  \"stock\": 10,\n  \"attributes\": {}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/products/{{product_id}}/variants",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "products", "{{product_id}}", "variants"]
+            }
+          }
+        },
+        {
+          "name": "GET Variant By Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"EffectivePrice is a positive number\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.effectivePrice).to.be.a('number');",
+                  "    pm.expect(body.data.effectivePrice).to.be.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/variants/{{variant_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "variants", "{{variant_id}}"]
+            }
+          }
+        },
+        {
+          "name": "PUT Update Variant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Attributes.material is Cotton\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.attributes.material).to.equal(\"Cotton\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"BASIC-TEE-XL-BLK-V2\",\n  \"price\": 33.99,\n  \"attributes\": { \"size\": \"XL\", \"color\": \"Black\", \"material\": \"Cotton\" }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/variants/{{variant_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "variants", "{{variant_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stock Adjustment",
+      "item": [
+        {
+          "name": "PATCH Adjust Stock — Add Stock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Stock is at least 20\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.data.stock).to.be.at.least(20);",
+                  "});",
+                  "pm.test(\"Message is Stock adjusted successfully\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.message).to.equal(\"Stock adjusted successfully.\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 20,\n  \"reason\": \"Restock\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/variants/{{variant_id}}/stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "variants", "{{variant_id}}", "stock"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Adjust Stock — Deduct Stock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"current_stock is captured\", function () {",
+                  "    var body = pm.response.json();",
+                  "    var newStock = body.data.stock;",
+                  "    pm.environment.set(\"current_stock\", newStock);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": -5,\n  \"reason\": \"Sale adjustment\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/variants/{{variant_id}}/stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "variants", "{{variant_id}}", "stock"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Adjust Stock — Zero Quantity (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Errors.quantity[0] mentions zero\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.errors.quantity).to.be.an('array');",
+                  "    pm.expect(body.errors.quantity[0].toLowerCase()).to.include(\"zero\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/variants/{{variant_id}}/stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "variants", "{{variant_id}}", "stock"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Adjust Stock — Insufficient Stock (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Response title is Unprocessable Entity\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.title).to.equal(\"Unprocessable Entity\");",
+                  "});",
+                  "pm.test(\"Detail mentions Insufficient stock\", function () {",
+                  "    var body = pm.response.json();",
+                  "    pm.expect(body.detail).to.include(\"Insufficient stock\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": -999999,\n  \"reason\": \"Over-deduct\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/variants/{{variant_id}}/stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "variants", "{{variant_id}}", "stock"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Adjust Stock — Exceed Rate Limit (edge case — manual)",
+          "description": "Run this request 31+ times rapidly to trigger 429. Use Collection Runner with iterations=35, delay=0ms.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 429) {",
+                  "    pm.test(\"Rate limit enforced\", function () {",
+                  "        pm.expect(pm.response.headers.get(\"Retry-After\")).to.exist;",
+                  "        pm.expect(pm.response.json().title).to.equal(\"Too Many Requests\");",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Request succeeded under limit\", function () {",
+                  "        pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v{{version}}/variants/{{variant_id}}/stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v{{version}}", "variants", "{{variant_id}}", "stock"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Adjust Stock — API Version via Header (edge case)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"api-supported-versions header exists\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"api-supported-versions\")).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Correlation-Id", "value": "{{$guid}}" },
+              { "key": "X-Api-Version", "value": "1" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/variants/{{variant_id}}/stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "variants", "{{variant_id}}", "stock"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "base_url",    "value": "https://localhost:7000", "type": "string" },
+    { "key": "version",     "value": "1",                     "type": "string" },
+    { "key": "category_id", "value": "",                      "type": "string" },
+    { "key": "product_id",  "value": "",                      "type": "string" },
+    { "key": "variant_id",  "value": "",                      "type": "string" }
+  ]
+}

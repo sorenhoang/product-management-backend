@@ -25,6 +25,7 @@ public static class InfrastructureExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IVariantRepository, VariantRepository>();
 
         // Cache settings
         services.Configure<CacheSettings>(configuration.GetSection(CacheSettings.SectionName));

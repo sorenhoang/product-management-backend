@@ -7,12 +7,14 @@ using ProductManagement.Infrastructure.Persistence;
 namespace ProductManagement.Infrastructure.Repositories;
 
 public class UnitOfWork(
-    AppDbContext context,
+    AppDbContext        context,
     ICategoryRepository categories,
-    IProductRepository products) : IUnitOfWork
+    IProductRepository  products,
+    IVariantRepository  variants) : IUnitOfWork
 {
     public ICategoryRepository Categories { get; } = categories;
     public IProductRepository  Products   { get; } = products;
+    public IVariantRepository  Variants   { get; } = variants;
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
