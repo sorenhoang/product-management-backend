@@ -19,15 +19,30 @@ public class CategoryRepository(AppDbContext context) : ICategoryRepository
             .ToListAsync(ct);
 
     public async Task<IEnumerable<Category>> GetTreeAsync(CancellationToken ct = default)
-        => await context.Categories
+    {
+        // Load all categories flat in a single query — no depth limit, no N+1 problem.
+        // Then reconstruct the tree in memory by wiring parent→children relationships.
+        var all = await context.Categories
             .AsNoTracking()
-            .Where(c => c.ParentId == null)
-            .Include(c => c.Children)
-                .ThenInclude(c => c.Children)
-                    .ThenInclude(c => c.Children)
-                        .ThenInclude(c => c.Children)
-                            .ThenInclude(c => c.Children)
+            .OrderBy(c => c.Name)
             .ToListAsync(ct);
+
+        var lookup = all.ToDictionary(c => c.Id);
+
+        foreach (var category in all)
+            category.Children = [];          // reset so AsNoTracking orphans don't linger
+
+        foreach (var category in all)
+        {
+            if (category.ParentId.HasValue &&
+                lookup.TryGetValue(category.ParentId.Value, out var parent))
+            {
+                parent.Children.Add(category);
+            }
+        }
+
+        return all.Where(c => c.ParentId is null);
+    }
 
     public async Task<bool> ExistsAsync(Guid id, CancellationToken ct = default)
         => await context.Categories.AnyAsync(c => c.Id == id, ct);

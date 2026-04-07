@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ProductManagement.Application.Common.Interfaces;
+using Serilog;
 using StackExchange.Redis;
 
 namespace ProductManagement.Infrastructure.Caching;
@@ -45,17 +46,22 @@ public class RedisCacheService(IConnectionMultiplexer multiplexer) : ICacheServi
     {
         try
         {
-            var server = multiplexer.GetServer(multiplexer.GetEndPoints().First());
-            var keys = server.Keys(pattern: $"{prefix}*").ToArray();
+            var db   = multiplexer.GetDatabase();
+            var keys = multiplexer.GetEndPoints()
+                .SelectMany(ep => multiplexer.GetServer(ep).Keys(
+                    database: db.Database,
+                    pattern:  $"{prefix}*"))
+                .Distinct()
+                .ToArray();
+
             if (keys.Length > 0)
-            {
-                var db = multiplexer.GetDatabase();
                 await db.KeyDeleteAsync(keys);
-            }
         }
-        catch
+        catch (Exception ex) when (ex is RedisException or RedisTimeoutException)
         {
-            // No matching keys or Redis unavailable — do nothing
+            // Redis unavailable — cache invalidation is best-effort; log so ops can investigate
+            Log.Warning(ex,
+                "RemoveByPrefixAsync failed for prefix '{Prefix}'. Cache may be stale.", prefix);
         }
     }
 

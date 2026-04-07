@@ -109,9 +109,10 @@ try
 
     var app = builder.Build();
 
+    // CorrelationId MUST be first so its header value is available in exception logs
+    app.UseCorrelationId();
     app.UseGlobalExceptionHandler();
     app.UseValidationExceptionHandler();
-    app.UseCorrelationId();
 
     app.UseSerilogRequestLogging(options =>
     {
