@@ -1,3 +1,4 @@
+using ProductManagement.Infrastructure.Extensions;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // [SERVICES: Database — EF Core + PostgreSQL]
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // [SERVICES: Redis]
 
