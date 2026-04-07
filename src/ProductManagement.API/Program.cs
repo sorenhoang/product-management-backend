@@ -12,10 +12,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// [SERVICES: Database — EF Core + PostgreSQL]
+// [SERVICES: Database — EF Core + PostgreSQL + Redis + Health checks]
 builder.Services.AddInfrastructure(builder.Configuration);
-
-// [SERVICES: Redis]
 
 // [SERVICES: FluentValidation]
 
@@ -36,6 +34,7 @@ if (app.Environment.IsDevelopment())
 
 // [MIDDLEWARE: HTTPS + Auth placeholder]
 app.UseHttpsRedirection();
+app.MapHealthChecks("/health");
 app.UseAuthorization();
 
 // [ENDPOINTS]
