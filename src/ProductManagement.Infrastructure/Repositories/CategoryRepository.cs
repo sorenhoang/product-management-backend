@@ -1,28 +1,43 @@
+using Microsoft.EntityFrameworkCore;
 using ProductManagement.Application.Common.Interfaces;
 using ProductManagement.Domain.Entities;
+using ProductManagement.Infrastructure.Persistence;
 
 namespace ProductManagement.Infrastructure.Repositories;
 
-public class CategoryRepository : ICategoryRepository
+public class CategoryRepository(AppDbContext context) : ICategoryRepository
 {
-    public Task<Category?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<Category?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => await context.Categories
+            .Include(c => c.Children)
+            .Include(c => c.Products)
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
 
-    public Task<IEnumerable<Category>> GetAllAsync(CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<IEnumerable<Category>> GetAllAsync(CancellationToken ct = default)
+        => await context.Categories
+            .AsNoTracking()
+            .ToListAsync(ct);
 
-    public Task AddAsync(Category entity, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<IEnumerable<Category>> GetTreeAsync(CancellationToken ct = default)
+        => await context.Categories
+            .AsNoTracking()
+            .Where(c => c.ParentId == null)
+            .Include(c => c.Children)
+                .ThenInclude(c => c.Children)
+                    .ThenInclude(c => c.Children)
+                        .ThenInclude(c => c.Children)
+                            .ThenInclude(c => c.Children)
+            .ToListAsync(ct);
+
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken ct = default)
+        => await context.Categories.AnyAsync(c => c.Id == id, ct);
+
+    public async Task AddAsync(Category entity, CancellationToken ct = default)
+        => await context.Categories.AddAsync(entity, ct);
 
     public void Update(Category entity)
-        => throw new NotImplementedException();
+        => context.Categories.Update(entity);
 
     public void Delete(Category entity)
-        => throw new NotImplementedException();
-
-    public Task<IEnumerable<Category>> GetTreeAsync(CancellationToken ct = default)
-        => throw new NotImplementedException();
-
-    public Task<bool> ExistsAsync(Guid id, CancellationToken ct = default)
-        => throw new NotImplementedException();
+        => context.Categories.Remove(entity);
 }

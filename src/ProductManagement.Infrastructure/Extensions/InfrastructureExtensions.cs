@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProductManagement.Application.Common.Interfaces;
+using ProductManagement.Application.Common.Settings;
 using ProductManagement.Infrastructure.Caching;
 using ProductManagement.Infrastructure.Persistence;
 using ProductManagement.Infrastructure.Repositories;

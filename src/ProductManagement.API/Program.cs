@@ -1,4 +1,5 @@
 using ProductManagement.API.Extensions;
+using ProductManagement.Application.Extensions;
 using ProductManagement.Infrastructure.Extensions;
 using Scalar.AspNetCore;
 using Serilog;
@@ -27,6 +28,7 @@ try
     builder.Services.AddInfrastructure(builder.Configuration);
 
     // [SERVICES: FluentValidation]
+    builder.Services.AddApplication();
 
     // [SERVICES: Mapster]
     builder.Services.AddMapster();
@@ -37,6 +39,7 @@ try
 
     // [MIDDLEWARE: Exception handler + Correlation ID — must be first]
     app.UseGlobalExceptionHandler();
+    app.UseValidationExceptionHandler();
     app.UseCorrelationId();
 
     // [MIDDLEWARE: Serilog request logging]

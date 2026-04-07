@@ -9,4 +9,7 @@ public static class MiddlewareExtensions
 
     public static IApplicationBuilder UseGlobalExceptionHandler(this IApplicationBuilder app)
         => app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+    public static IApplicationBuilder UseValidationExceptionHandler(this IApplicationBuilder app)
+        => app.UseMiddleware<ValidationExceptionMiddleware>();
 }

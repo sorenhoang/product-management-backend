@@ -1,15 +1,34 @@
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using ProductManagement.Application.Common.Exceptions;
 using ProductManagement.Application.Common.Interfaces;
+using ProductManagement.Infrastructure.Persistence;
 
 namespace ProductManagement.Infrastructure.Repositories;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork(
+    AppDbContext context,
+    ICategoryRepository categories,
+    IProductRepository products) : IUnitOfWork
 {
-    public IProductRepository Products
-        => throw new NotImplementedException();
+    public ICategoryRepository Categories { get; } = categories;
+    public IProductRepository  Products   { get; } = products;
 
-    public ICategoryRepository Categories
-        => throw new NotImplementedException();
-
-    public Task<int> SaveChangesAsync(CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            return await context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConcurrencyException();
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            throw new ConflictException(
+                "A record with the same unique value already exists.");
+        }
+    }
 }
