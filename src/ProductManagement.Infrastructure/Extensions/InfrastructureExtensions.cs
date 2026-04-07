@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Common.Interfaces;
 using ProductManagement.Application.Common.Settings;
 using ProductManagement.Infrastructure.Caching;
@@ -52,5 +53,23 @@ public static class InfrastructureExtensions
                 tags: ["database"]);
 
         return services;
+    }
+
+    public static async Task ApplyMigrationsAsync(this IServiceProvider services)
+    {
+        using var scope  = services.CreateScope();
+        var db     = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<AppDbContext>>();
+        try
+        {
+            logger.LogInformation("Applying database migrations...");
+            await db.Database.MigrateAsync();
+            logger.LogInformation("Database migrations applied successfully.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while applying migrations.");
+            throw;
+        }
     }
 }

@@ -140,6 +140,8 @@ try
     app.MapHealthChecks("/health");
     app.MapControllers();
 
+    await app.Services.ApplyMigrationsAsync();
+
     Log.Information("Starting ProductManagement API");
     app.Run();
 }
