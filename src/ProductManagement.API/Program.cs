@@ -29,6 +29,7 @@ try
     // [SERVICES: FluentValidation]
 
     // [SERVICES: Mapster]
+    builder.Services.AddMapster();
 
     // [SERVICES: Application services / repositories]
 
